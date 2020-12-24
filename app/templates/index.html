@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block navbar %}
+<div>
+    Traceability:
+    <a href={{ url_for('front_bp.index') }}>Home</a>
+
+    {% if current_user.is_anonymous %}
+    <a href={{ url_for('auth_bp.login') }}>Login</a>
+    {% else %}
+    <a href={{ url_for('auth_bp.logout') }}>Logout</a>
+    {% endif %}
+</div>
+<hr>
+{% endblock %}
+{% block content %}
+<h1>Hi, there, {{ current_user.username }}!</h1>
+{% endblock %}

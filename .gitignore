@@ -1,0 +1,8 @@
+.env
+redis-stable
+__pycache__
+venv
+123
+.vscode
+*.pyc
+
