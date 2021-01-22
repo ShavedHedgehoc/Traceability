@@ -1,4 +1,5 @@
 import datetime
+import os
 from dateutil.parser import parse
 from lxml import etree as et
 from sqlalchemy.sql.expression import false, true
@@ -21,30 +22,38 @@ from .models import (User,
 
 @celery.task(base=Singleton, name='base_update')
 def test():
+    docs_limit = os.environ.get('DOCS_LIMIT')
 
     doctypes = [
-        'VzveshivanieBezPechatiTest',
-        'VzveshivaniePechatTest',
-        # 'ZagruzkaEmkosteiVApparat',
-        # 'Vzveshivanie',
-        # 'VzveshivanieKolpino',
+        ['VzveshivanieBezPechatiTest', 'Взвешивание'],
+        ['VzveshivaniePechatTest', 'Взвешивание'],
+        ['Vzveshivanie', 'Взвешивание'],
+        ['VzveshivanieKolpino', 'Взвешивание'],
     ]
+    for reserved_docktype in doctypes:
+        existing_docktype = Doctype.query.filter(
+            Doctype.name == reserved_docktype[0]).one_or_none()
+        if existing_docktype is None:
+            new_docktype = Doctype(name=reserved_docktype[0],
+                                   alias=reserved_docktype[1]
+                                   )
+            db.session.add(new_docktype)
+            db.session.commit()
 
     print('Start')
-    # insert limit from config
     not_processed_data = db.session.query(XmlData).filter(
         XmlData.processed == false()).filter(
         XmlData.empty_doc == false()).filter(
-        XmlData.unsupported_doc == false()).limit(1000)
+        XmlData.unsupported_doc == false()).limit(docs_limit)
 
     processed_count = 0
     added_count = 0
     doc_count = not_processed_data.count()
-
     for f in not_processed_data.all():
         processed_count += 1
         print('Processing %s documents from %s ...' %
               (processed_count, doc_count))
+
         tree = et.XML(f.xml_data)
         doc_id = tree.xpath("/Document/@id")[0]
         doc_type = tree.xpath("/Document/@documentTypeName")[0]
@@ -52,9 +61,6 @@ def test():
         create_date = parse(create_date_string)
         author = tree.xpath("/Document/@userId")[0]
 
-        # Проверка на существование документа
-        # Если документ существует - ставим отработано,
-        # переходим к следующему
         existing_document = Document.query.filter(
             Document.doc_id == doc_id).one_or_none()
 
@@ -77,9 +83,6 @@ def test():
             print('Skip empty document....')
             continue
 
-        # Проверка на поддерживамость типа документа
-        # Если документ не поддерживается - ставим unsupported,
-        # переходим к следующему
         doctype = Doctype.query.filter(
             Doctype.name == doc_type).one_or_none()
 
@@ -118,7 +121,8 @@ def test():
                 Document.doc_id == doc_id).one_or_none()
 
             if existing_document is not None:
-                # тут нужен роллбэк
+                f.processed = True
+                db.session.commit()
                 continue
             new_doc = Document(
                 doc_id=doc_id,

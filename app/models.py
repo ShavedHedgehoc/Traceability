@@ -3,13 +3,18 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import login
 
-from sqlalchemy.dialects.mssql import XML, BIT
+from sqlalchemy.dialects.mssql.base import XML, BIT
 from sqlalchemy.sql import expression
+# from sqlalchemy import MetaData
+
+# meta = MetaData()
+# meta.reflect(bind='data')
 
 
 class XmlData(db.Model):
 
     __bind_key__ = 'data'
+    __tablename__ = 'XMLData'
 
     id = db.Column(db.Integer, primary_key=True)
     xml_data = db.Column(XML)
@@ -168,7 +173,7 @@ class Weighting(db.Model):
     product_id = db.Column(db.String(6), db.ForeignKey(
         'product.id'), index=True, nullable=False)
     lot_id = db.Column(db.Integer, db.ForeignKey(
-        'lot.id'), index=True, nullable=False)        
+        'lot.id'), index=True, nullable=False)
     batch_id = db.Column(db.Integer, db.ForeignKey(
         'batch.id'), index=True, nullable=False)
     quantity = db.Column(db.Numeric(precision=9, scale=4))

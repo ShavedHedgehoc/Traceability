@@ -9,6 +9,10 @@ task_serializer = 'json'
 beat_schedule = {
     'documents_upload': {
         'task': 'base_update',
-        'schedule':  20,
-    }
+        'schedule':  30,
+    },
+    # 'upload': {
+    #     'task': 'base',
+    #     'schedule':  30,
+    # },
 }
