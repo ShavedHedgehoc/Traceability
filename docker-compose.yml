@@ -56,7 +56,6 @@ services:
       - celerybeat
     network_mode: host
     command: celery -A celery_worker.celery flower
-    # celery flower --basic_auth=user1:password1,user2:password2
   
   postgres:
     container_name: postgres_container

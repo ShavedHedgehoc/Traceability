@@ -4,11 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import login
 
 from sqlalchemy.dialects.mssql.base import XML, BIT
-from sqlalchemy.sql import expression
-# from sqlalchemy import MetaData
 
-# meta = MetaData()
-# meta.reflect(bind='data')
+from sqlalchemy.sql import expression
 
 
 class XmlData(db.Model):
@@ -23,6 +20,8 @@ class XmlData(db.Model):
     empty_doc = db.Column(db.Boolean(), server_default=expression.false())
     unsupported_doc = db.Column(
         db.Boolean(), server_default=expression.false())
+    catched = db.Column(db.Boolean(), server_default=expression.false())
+    task_id = db.Column(db.String(64), index=True)
 
 
 class User(UserMixin, db.Model):

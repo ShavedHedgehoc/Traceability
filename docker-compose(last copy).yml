@@ -30,6 +30,7 @@ services:
       - .:/code
     depends_on:      
       - redis
+      - postgres
     network_mode: host      
     command: celery -A celery_worker.celery worker
 
@@ -40,8 +41,9 @@ services:
       - .:/code
     depends_on:      
       - redis
+      - postgres
     network_mode: host
-    command: celery -A celery_worker.celery beat --loglevel=INFO
+    command: celery -A celery_worker.celery beat --pidfile== --loglevel=INFO
 
   flower:
     <<: *default-app
@@ -55,7 +57,7 @@ services:
       - celery
       - celerybeat
     network_mode: host
-    command: celery -A celery_worker.celery flower
+    command: celery -A celery_worker.celery flower --basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}    
   
   postgres:
     container_name: postgres_container
@@ -63,7 +65,8 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-
         postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}           
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /tmp           
     volumes:
       -  /home/postgres:/var/lib/postgresql/data          
     ports:
