@@ -1,0 +1,38 @@
+<Document xmlns:ns0="http://schemas.cleverence.ru/clr" appointment="Непогодин А.С" createDate="2020-03-12T17:35:50.0000000+03:00" deviceIP="192.168.250.84" deviceId="DatalogicMemorX3-P18N00652" deviceName="MemorX3" documentTypeName="VzveshivaniePechatTest" finished="True" id="new_03107b76-1ef1-4537-89ef-7c2d5345e9df" lastChangeDate="2020-03-12T17:41:05.8612337+03:00" modified="True" name="Взвешивание_12.03.2020_15.35.54_301" userId="Непогодин А.С" userName="Непогодин А.С" warehouseId="Основной склад">
+  <Fields count="4">
+    <FieldValue fieldName="Варка">
+      <Value ns0:Type="String">483C0</Value>
+    </FieldValue>
+    <FieldValue fieldName="Выполнил">
+      <Value ns0:Type="String">Непогодин А.С</Value>
+    </FieldValue>
+    <FieldValue fieldName="ШтрихкодЕмкости">
+      <Value ns0:Type="String">98712032020153600301</Value>
+    </FieldValue>
+    <FieldValue fieldName="Аппарат">
+      <Value ns0:Type="String">115</Value>
+    </FieldValue>
+  </Fields>
+  <States count="1">
+    <DocumentState finished="True" finishedDate="2020-03-12T17:40:59.0000000+03:00" inProcess="False" inProcessDate="2020-03-12T17:35:50.0000000+03:00" modified="True" modifiedDate="2020-03-12T17:35:54.0000000+03:00" processingTime="00:05:06" userId="Непогодин А.С" />
+  </States>
+  <Tables count="0" isLazy="False" lazyCount="0" />
+  <DeclaredItems count="1" isLazy="False" lazyCount="0">
+    <DocumentItem createdBy="Device" currentQuantity="4.1" declaredQuantity="0" packingId="кг" productId="007280" uid="9bff6b11-48e8-4169-b1c5-83a4e338ab18">
+      <Fields count="1">
+        <FieldValue fieldName="Партия">
+          <Value ns0:Type="String">08104271382901202001</Value>
+        </FieldValue>
+      </Fields>
+    </DocumentItem>
+  </DeclaredItems>
+  <CurrentItems count="1" isLazy="False" lazyCount="0">
+    <DocumentItem blUid="9bff6b11-48e8-4169-b1c5-83a4e338ab18" createdBy="Device" currentQuantity="4.1" declaredQuantity="0" packingId="кг" productId="007280" uid="9bff6b11-48e8-4169-b1c5-83a4e338ab18">
+      <Fields count="1">
+        <FieldValue fieldName="Партия">
+          <Value ns0:Type="String">08104271382901202001</Value>
+        </FieldValue>
+      </Fields>
+    </DocumentItem>
+  </CurrentItems>
+</Document>

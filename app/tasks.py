@@ -26,10 +26,12 @@ from .models import (User,
                      )
 
 
-def get_doctype_id_alias(doctype_name):
+def get_doctype_id_alias(data):
     """ Return [doctype.id, doctype.alias] if exists,
         else return [-1,-1]
     """
+    tree = et.XML(data)
+    doctype_name = tree.xpath("/Document/@documentTypeName")[0]
     doctype = db.session.query(Doctype).filter(
         Doctype.name == doctype_name).one_or_none()
     if doctype is None:
@@ -37,37 +39,12 @@ def get_doctype_id_alias(doctype_name):
     return doctype.id, doctype.alias
 
 
-def xml_parse(data):
-    """ Parse XML data to dictionary
-    """
-    tree = et.XML(data)
-    doc_id = tree.xpath("/Document/@id")[0]
-    doc_type = tree.xpath("/Document/@documentTypeName")[0]
-    create_date_string = tree.xpath("/Document/@createDate")[0]
-    create_date = parse(create_date_string)
-    author = tree.xpath("/Document/@userId")[0]
-    doctype_id = get_doctype_id_alias(doc_type)[0]
-    doctype_alias = get_doctype_id_alias(doc_type)[1]
-    try:
-        doc_row_count = len(tree.xpath("/Document/CurrentItems/DocumentItem"))
-    except:
-        doc_row_count=-2
-    # if doctype_alias == 'Взвешивание':
-    #     # container = tree.xpath(
-    #     #     '/Document/Fields/FieldValue\[@fieldName="ШтрихкодЕмкости"]/Value/text()')[0]        
-    #     doc_strings = tree.xpath("/Document/CurrentItems/DocumentItem")
-
-    result_dict = {
-        "doc_id": doc_id,
-        "doc_type_id": doctype_id,
-        "doc_type_alias": doctype_alias,
-        "author": author,
-        "create_date": create_date,
-        "doc_row_count": doc_row_count
-
-    }
-
-    return(result_dict)
+def document_exist(doc_id):
+    qry = db.session.query(Document).filter(
+        Document.doc_id == doc_id).one_or_none()
+    if qry is None:
+        return False
+    return True
 
 
 def get_author_id(author_name):
@@ -84,6 +61,150 @@ def get_author_id(author_name):
     else:
         author_id = author.id
     return author_id
+
+
+@ celery.task(base=Singleton, name='doc_write')
+def doc_write():
+    sub_qry = db.session.query(XmlData.id, XmlData.xml_data).filter(
+        XmlData.processed == false()).filter(
+        XmlData.catched == false()).filter(
+        XmlData.empty_doc == false()).filter(
+        XmlData.unsupported_doc == false()).first()
+    catched_id = sub_qry.id
+    doctype_id, doctype_alias = get_doctype_id_alias(sub_qry.xml_data)
+    if doctype_alias == "Взвешивание":
+        parsed_data = xml_parse_weighting(sub_qry.xml_data)
+        if parsed_data['doc_row_count'] == 0:
+            data = {'empty_doc': True, 'task_id': ''}
+            upd_qry = db.session.query(XmlData).filter(
+                XmlData.id == catched_id).update(data, False)
+        else:
+            if document_exist(parsed_data['doc_id']):
+                pass
+            else:
+                new_document = Document(
+                    doc_id=parsed_data['doc_id'],
+                    doctype_id=doctype_id,
+                    author_id=parsed_data['author_id'],
+                    date=parse(parsed_data['create_date_string'])
+                )
+                db.session.add(new_document)
+                db.session.commit()
+
+            data = {'processed': True, 'task_id': ''}
+            upd_qry = db.session.query(XmlData).filter(
+                XmlData.id == catched_id).update(data, False)
+        print(parsed_data)
+    else:
+        data = {'unsupported_doc': True, 'task_id': ''}
+        upd_qry = db.session.query(XmlData).filter(
+            XmlData.id == catched_id).update(data, False)
+        print('Unsupported!')
+    db.session.commit()
+
+
+# def get_doctype_id_alias2(doctype_name):
+#     """ Return [doctype.id, doctype.alias] if exists,
+#         else return [-1,-1]
+#     """
+#     doctype = db.session.query(Doctype).filter(
+#         Doctype.name == doctype_name).one_or_none()
+#     if doctype is None:
+#         return -1, -1
+#     return doctype.id, doctype.alias
+
+
+def xml_parse_weighting(data):
+    """ Parse XML data to dictionary
+        if doctype is "weighting"
+    """
+    tree = et.XML(data)
+    doc_id = tree.xpath("/Document/@id")[0]
+    create_date_string = tree.xpath("/Document/@createDate")[0]
+    author = tree.xpath("/Document/@userId")[0]
+
+    doc_type = tree.xpath("/Document/@documentTypeName")[0]
+
+    try:
+        doc_row_count = len(tree.xpath("/Document/CurrentItems/DocumentItem"))
+    except:
+        doc_row_count = -2
+    if (doc_row_count == 0) or (doc_row_count == -2):
+        result_dict = {
+            "doc_id": doc_id,
+            "doc_type": doc_type,
+            "author": author,
+            "doc_row_count": doc_row_count,
+            "create_date_string": create_date_string,
+            "container": '',
+            "rows": []
+        }
+        return result_dict
+
+    container = tree.xpath(
+        '/Document/Fields/FieldValue\
+                             [@fieldName="ШтрихкодЕмкости"]/Value/text()')[0]
+
+    doc_strings = tree.xpath("/Document/CurrentItems/DocumentItem")
+    doc_rows = []
+
+    for string in doc_strings:
+        product_id = string.xpath('@productId')[0]
+        lot = string.xpath(
+            'Fields/FieldValue[@fieldName="Партия"]/Value/text()')[0]
+        quantity = string.xpath('@currentQuantity')[0]
+        row_dict = {
+            "product_id": product_id,
+            "lot": lot,
+            "quantity": quantity
+        }
+        doc_rows.append(row_dict)
+
+    result_dict = {
+        "doc_id": doc_id,
+        "doc_type": doc_type,
+        "author": author,
+        "author_id": get_author_id(author),
+        'doc_row_count': doc_row_count,
+        "create_date_string": create_date_string,
+        "container": container,
+        "rows": doc_rows
+    }
+
+    return(result_dict)
+
+
+def xml_parse(data):
+    """ Parse XML data to dictionary
+    """
+    tree = et.XML(data)
+    doc_id = tree.xpath("/Document/@id")[0]
+    doc_type = tree.xpath("/Document/@documentTypeName")[0]
+    create_date_string = tree.xpath("/Document/@createDate")[0]
+    create_date = parse(create_date_string)
+    author = tree.xpath("/Document/@userId")[0]
+    doctype_id = get_doctype_id_alias(doc_type)[0]
+    doctype_alias = get_doctype_id_alias(doc_type)[1]
+    try:
+        doc_row_count = len(tree.xpath("/Document/CurrentItems/DocumentItem"))
+    except:
+        doc_row_count = -2
+    # if doctype_alias == 'Взвешивание':
+    #     # container = tree.xpath(
+    #     #     '/Document/Fields/FieldValue\[@fieldName="ШтрихкодЕмкости"]/Value/text()')[0]
+    #     doc_strings = tree.xpath("/Document/CurrentItems/DocumentItem")
+
+    result_dict = {
+        "doc_id": doc_id,
+        "doc_type_id": doctype_id,
+        "doc_type_alias": doctype_alias,
+        "author": author,
+        "create_date": create_date,
+        "doc_row_count": doc_row_count
+
+    }
+
+    return(result_dict)
 
 
 @ celery.task(base=Singleton, name='doctype_update')
