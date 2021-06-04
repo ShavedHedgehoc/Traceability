@@ -1,0 +1,131 @@
+x-app: &default-app
+    build:
+      context: ./
+      dockerfile: ./docker/web/Dockerfile
+
+version: '3.8'
+services:  
+  
+  web:
+    <<: *default-app  
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/code        
+    restart: on-failure
+    depends_on:
+      - redis
+      - postgres
+      - clever_db
+    command: > 
+      bash -c "export FLASK_APP=traceability
+      && export FLASK_ENV=development                
+      && flask db upgrade
+      && python traceability.py"
+    
+  celery:
+    <<: *default-app
+    restart: on-failure 
+    volumes:
+      - .:/code
+    depends_on:      
+      - redis
+    network_mode: host      
+    command: celery -A celery_worker.celery worker
+
+  celerybeat:
+    <<: *default-app
+    restart: on-failure 
+    volumes:
+      - .:/code
+    depends_on:      
+      - redis
+    network_mode: host
+    command: celery -A celery_worker.celery beat --loglevel=INFO
+
+  flower:
+    <<: *default-app
+    ports:
+      - "5555:5555"
+    restart: on-failure 
+    volumes:
+      - .:/code
+    depends_on:      
+      - redis
+      - celery
+      - celerybeat
+    network_mode: host
+    command: celery -A celery_worker.celery flower
+  
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-
+        postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}           
+    volumes:
+      -  /home/postgres:/var/lib/postgresql/data          
+    ports:
+      - "5432:5432"
+    
+    networks:
+      - postgres
+      - default
+    restart: unless-stopped
+    
+  
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:      
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}      
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+       - pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT}:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+  
+  clever_db:
+    build: 
+      context: ./
+      dockerfile: ./docker/clever_db/Dockerfile    
+    ports:
+      - 1401:1433    
+    environment:      
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${CLEVER_DB_SA_PASSWORD}
+      MSSQL_DB: ${CLEVER_DB_MSSQL_DB}
+      MSSQL_USER: ${CLEVER_DB_MSSQL_USER}
+      MSSQL_PASSWORD: ${CLEVER_DB_MSSQL_PASSWORD}
+    volumes:      
+      - /home/mssql/clever_data:/var/opt/mssql    
+    container_name: clever_db
+    
+  
+  redis:
+    image: redis:latest
+    hostname: redis
+    ports:
+      - "6379:6379"
+    
+
+
+
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    postgres:
+    pgadmin:
+      
+  
+  
+  
+  
+  

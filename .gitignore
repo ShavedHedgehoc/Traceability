@@ -5,4 +5,6 @@ venv
 123
 .vscode
 *.pyc
+*.zip
+System Volume Information
 

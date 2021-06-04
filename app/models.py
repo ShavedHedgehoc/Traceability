@@ -16,12 +16,21 @@ class XmlData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     xml_data = db.Column(XML)
     processed = db.Column(db.Boolean(), server_default=expression.false())
-    error = db.Column(db.Boolean(), server_default=expression.false())
-    empty_doc = db.Column(db.Boolean(), server_default=expression.false())
-    unsupported_doc = db.Column(
-        db.Boolean(), server_default=expression.false())
-    catched = db.Column(db.Boolean(), server_default=expression.false())
-    task_id = db.Column(db.String(64), index=True)
+    # error = db.Column(db.Boolean(), server_default=expression.false())
+    # empty_doc = db.Column(db.Boolean(), server_default=expression.false())
+    # unsupported_doc = db.Column(
+    #     db.Boolean(), server_default=expression.false())
+    # catched = db.Column(db.Boolean(), server_default=expression.false())
+    # task_id = db.Column(db.String(64), index=True)
+
+class XmlDataP(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    xml_data = db.Column(db.Text())
+    processed = db.Column(db.Boolean(), default=False)
+    empty_doc = db.Column(db.Boolean(), default=False)
+    unsupported_doc = db.Column(db.Boolean(), default=False)
+
 
 
 class User(UserMixin, db.Model):

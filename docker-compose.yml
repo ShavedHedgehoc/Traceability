@@ -1,93 +1,57 @@
-x-app: &default-app
-    build:
+version: '3'
+services:  
+  web:    
+    build: 
       context: ./
       dockerfile: ./docker/web/Dockerfile
-
-version: '3.8'
-services:  
-  
-  web:
-    <<: *default-app  
     ports:
       - "5000:5000"
     volumes:
-      - .:/code        
-    restart: on-failure
+      - .:/code
     depends_on:
-      - redis
-      - postgres
-      - clever_db
+        - redis
+        - postgres
+        - clever_db
+    restart: on-failure
     command: > 
       bash -c "export FLASK_APP=traceability
       && export FLASK_ENV=development                
       && flask db upgrade
       && python traceability.py"
-    
-  celery:
-    <<: *default-app
-    restart: on-failure 
-    volumes:
-      - .:/code
-    depends_on:      
-      - redis
-    network_mode: host      
-    command: celery -A celery_worker.celery worker
 
-  celerybeat:
-    <<: *default-app
-    restart: on-failure 
-    volumes:
-      - .:/code
-    depends_on:      
-      - redis
-    network_mode: host
-    command: celery -A celery_worker.celery beat --loglevel=INFO
-
-  flower:
-    <<: *default-app
-    ports:
-      - "5555:5555"
-    restart: on-failure 
-    volumes:
-      - .:/code
-    depends_on:      
-      - redis
-      - celery
-      - celerybeat
-    network_mode: host
-    command: celery -A celery_worker.celery flower
-  
   postgres:
     container_name: postgres_container
     image: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-
         postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}           
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      # PGDATA: /data/postgres
+      PGDATA: /postgres/data
     volumes:
-      -  /home/postgres:/var/lib/postgresql/data          
+      # - postgres:/data/postgres
+      - postgres:/home/postgresql/data
+      # - postgres:/home/postgresql/data
+      
     ports:
       - "5432:5432"
-    
     networks:
       - postgres
-      - default
     restart: unless-stopped
-    
   
-  pgadmin:
-    container_name: pgadmin_container
-    image: dpage/pgadmin4
-    environment:      
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}      
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    volumes:
-       - pgadmin:/root/.pgadmin
-    ports:
-      - "${PGADMIN_PORT}:80"
-    networks:
-      - postgres
-    restart: unless-stopped
+  # pgadmin:
+  #   container_name: pgadmin_container
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+  #   volumes:
+  #      - pgadmin:/root/.pgadmin
+  #   ports:
+  #     - "${PGADMIN_PORT:-5050}:80"
+  #   networks:
+  #     - postgres
+  #   restart: unless-stopped
   
   clever_db:
     build: 
@@ -102,16 +66,12 @@ services:
       MSSQL_USER: ${CLEVER_DB_MSSQL_USER}
       MSSQL_PASSWORD: ${CLEVER_DB_MSSQL_PASSWORD}
     volumes:      
-      - /home/mssql/clever_data:/var/opt/mssql    
+      - /home/mssql/clever_data:/var/opt/mssql
+      # - /var/lib/clever_data:/var/opt/mssql
     container_name: clever_db
-    
   
   redis:
-    image: redis:latest
-    hostname: redis
-    ports:
-      - "6379:6379"
-    
+    image: redis
 
 
 
@@ -122,7 +82,7 @@ networks:
 
 volumes:
     postgres:
-    pgadmin:
+    # pgadmin:
       
   
   
