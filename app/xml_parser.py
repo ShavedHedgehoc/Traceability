@@ -142,7 +142,7 @@ def get_rows(tree):
     doc_strings = get_rows_strings(tree)
     rows = []
     if doc_strings == []:
-        return rows
+        return [{}]
     for one_string in doc_strings:
         product_id = get_product_id(one_string)
         lot = get_lot(one_string)
