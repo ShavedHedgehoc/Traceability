@@ -30,6 +30,7 @@ class Validator():
                     {
                         'product_id': And(str, lambda s: s != ''),
                         'lot': And(str, lambda s: s != ''),
+                        'expired_date':And(str),
                         'quantity': And(str, lambda s: s != ''),
                         'packing_capasity': And(str, lambda s: s == ''),
                         'packing_quantity': And(str, lambda s: s == ''),
@@ -69,6 +70,7 @@ class Validator():
                     {
                         'product_id': And(str, lambda s: s != ''),
                         'lot': And(str, lambda s: s != ''),
+                        'expired_date':And(str),
                         'quantity': And(str, lambda s: s != ''),
                         'packing_capasity': And(str, lambda s: s == ''),
                         'packing_quantity': And(str, lambda s: s == ''),
@@ -86,7 +88,8 @@ class Validator():
             return False
 
     def validate_acceptance(self, data):
-        
+        # make comparision date >2021 year
+        # make validate author
         self.acceptance_calling = True
 
         acceptance_schema = Schema(
@@ -108,6 +111,7 @@ class Validator():
                     {
                         'product_id': And(str, lambda s: s != ''),
                         'lot': And(str, lambda s: s != ''),
+                        'expired_date':And(str),
                         'quantity': And(str, lambda s: s != ''),
                         'packing_capasity': And(str, lambda s: s != ''),
                         'packing_quantity': And(str, lambda s: s != ''),

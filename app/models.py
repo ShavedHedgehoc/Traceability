@@ -23,6 +23,7 @@ class XmlData(db.Model):
     # catched = db.Column(db.Boolean(), server_default=expression.false())
     # task_id = db.Column(db.String(64), index=True)
 
+
 class XmlDataP(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
@@ -30,7 +31,6 @@ class XmlDataP(db.Model):
     processed = db.Column(db.Boolean(), default=False)
     empty_doc = db.Column(db.Boolean(), default=False)
     unsupported_doc = db.Column(db.Boolean(), default=False)
-
 
 
 class User(UserMixin, db.Model):
@@ -60,6 +60,16 @@ class Author(db.Model):
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
     barcode = db.Column(db.String(13), index=True)
 
+    @classmethod
+    def get_id(cls, name):
+        author = db.session.query(cls).filter(
+            cls.name == name).one_or_none()
+        if author is None:
+            author = cls(name=name)
+            db.session.add(author)
+            db.session.commit()
+        return author.id
+
 
 class Batch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,15 +77,45 @@ class Batch(db.Model):
     date = db.Column(db.DateTime())
     plant = db.Column(db.String(1), index=True)
 
+    @classmethod
+    def get_id(cls, name):
+        batch = db.session.query(cls).filter(
+            cls.name == name).one_or_none()
+        if batch is None:
+            batch = cls(name=name)
+            db.session.add(batch)
+            db.session.commit()
+        return batch.id
+
 
 class Barrel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
 
+    @classmethod
+    def get_id(cls, name):
+        barrel = db.session.query(cls).filter(
+            cls.name == name).one_or_none()
+        if barrel is None:
+            barrel = cls(name=name)
+            db.session.add(barrel)
+            db.session.commit()
+        return barrel.id
+
 
 class Container(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), index=True, unique=True, nullable=False)
+
+    @classmethod
+    def get_id(cls, name):
+        container = db.session.query(cls).filter(
+            cls.name == name).one_or_none()
+        if container is None:
+            container = cls(name=name)
+            db.session.add(container)
+            db.session.commit()
+        return container.id
 
 
 class Doctype(db.Model):
@@ -89,6 +129,16 @@ class Product(db.Model):
     name = db.Column(db.String(255), index=True)
     marking = db.Column(db.String(50), index=True)
     barcode = db.Column(db.String(13), index=True)
+
+    @classmethod
+    def get_id(cls, id):
+        product = db.session.query(cls).filter(
+            cls.id == id).one_or_none()
+        if product is None:
+            product = cls(id=id)
+            db.session.add(product)
+            db.session.commit()
+        return product.id
 
 
 class Boil(db.Model):
@@ -109,6 +159,20 @@ class Document(db.Model):
         'author.id'), index=True, nullable=False)
     date = db.Column(db.DateTime())
     plant = db.Column(db.String(1), index=True)
+
+    @classmethod
+    def get_id(cls, doc_id, doctype_id, author_id, date, plant):
+        document = db.session.query(cls).filter(
+            cls.doc_id == doc_id).one_or_none()
+        if document is None:
+            document = cls(doc_id=doc_id,
+                           doctype_id=doctype_id,
+                           author_id=author_id,
+                           date=date,
+                           plant=plant)
+            db.session.add(document)
+            db.session.commit()
+        return document.id
 
 
 class Seller(db.Model):
@@ -137,6 +201,17 @@ class Lot(db.Model):
         'manufacturer.id'), index=True, nullable=True)
     manufacturer_lot_id = db.Column(db.Integer, db.ForeignKey(
         'manufacturer_lot.id'), index=True, nullable=True)
+
+    @classmethod
+    def get_id(cls, name, product_id):
+        lot = db.session.query(cls).filter(
+            cls.name == name).one_or_none()
+        if lot is None:
+            lot = cls(name=name,
+                      product_id=product_id)
+            db.session.add(lot)
+            db.session.commit()
+        return lot.id
 
 
 class BatchProduct(db.Model):
