@@ -116,7 +116,7 @@ def write_doc(data):
     doc_id = header['doc_id']
 
     if doc_exists(doc_id):
-        return('Skip')
+        return 'Skip'
 
     doctype_id, doctype_alias = get_doctype_id_alias(header['doc_type'])
     date = parse(header['create_date_string'])
@@ -153,17 +153,18 @@ def write_doc(data):
         db.session.commit()
 
     if doctype_alias == 'acceptance':
-        acceptance_rows=[]
+        acceptance_rows = []
         for row in rows:
             product_id = Product.get_id(row['product_id'])
             lot_id = Lot.get_id(row['lot'], product_id)
-            # expire_date=parse(row['expire_date'])
+            expire_date = parse(row['expire_date'])
             barrel_id = Barrel.get_id(row['packing_name'])
             barrel_capacity = row['packing_capasity']
             barrel_quantity = row['packing_quantity']
             a_obj = Acceptance(document_id=document_id,
                                product_id=product_id,
                                lot_id=lot_id,
+                               expire_date=expire_date,
                                barrel_id=barrel_id,
                                barrel_capacity=barrel_capacity,
                                barrel_quantity=barrel_quantity)
@@ -171,7 +172,7 @@ def write_doc(data):
         db.session.bulk_save_objects(acceptance_rows)
         db.session.commit()
 
-    return('Write!')
+    return 'Write!'
 
 
 @ celery.task(base=Singleton, name='doc_write')

@@ -85,7 +85,13 @@ def get_lot(one_string):
 
 
 def get_exp_date(one_string):
-    return one_string.xpath('@expiredDate')[0]
+    try:
+        exp_date = one_string.xpath('@expiredDate')[0]
+    except IndexError:        
+        exp_date = ''        
+    except AttributeError:
+        exp_date = ''        
+    return exp_date
 
 
 def get_quantity(one_string):
@@ -142,8 +148,6 @@ def get_packing_code(one_string):
     return packing_code
 
 
-
-
 def get_rows(tree):
     doc_strings = get_rows_strings(tree)
     rows = []
@@ -152,18 +156,17 @@ def get_rows(tree):
     for one_string in doc_strings:
         product_id = get_product_id(one_string)
         lot = get_lot(one_string)
-        expired_date=get_exp_date(one_string)
+        expire_date = get_exp_date(one_string)
         quantity = get_quantity(one_string)
         packing_capasity = get_packing_capasity(one_string)
         packing_quantity = get_packing_quantity(one_string)
         packing_name = get_packing_name(one_string)
         packing_code = get_packing_code(one_string)
 
-
         row_dict = {
             'product_id': product_id,
             'lot': lot,
-            'expired_date':expired_date,
+            'expire_date': expire_date,
             'quantity': quantity,
             'packing_capasity': packing_capasity,
             'packing_quantity': packing_quantity,

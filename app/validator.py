@@ -1,4 +1,8 @@
 from schema import Schema, And, Use, Optional, SchemaError
+import datetime
+from dateutil.parser import parse
+
+bad_author_list = ['Скрипковский М.Ю.']
 
 
 class Validator():
@@ -17,7 +21,7 @@ class Validator():
                 {
                     'doc_id': And(str, lambda s: s != ''),
                     'create_date_string': And(str, lambda s: s != ''),
-                    'author': And(str, lambda s: s != ''),
+                    'author': And(str, lambda s: s != '', lambda s: s not in bad_author_list),
                     'doc_type': And(str, lambda s: s != ''),
                 },
                 'fields':
@@ -30,7 +34,7 @@ class Validator():
                     {
                         'product_id': And(str, lambda s: s != ''),
                         'lot': And(str, lambda s: s != ''),
-                        'expired_date':And(str),
+                        'expire_date': And(str, lambda s: s == ''),
                         'quantity': And(str, lambda s: s != ''),
                         'packing_capasity': And(str, lambda s: s == ''),
                         'packing_quantity': And(str, lambda s: s == ''),
@@ -46,6 +50,8 @@ class Validator():
             return validate
         except:
             return False
+        finally:
+            pass
 
     def validate_load(self, data):
 
@@ -70,7 +76,7 @@ class Validator():
                     {
                         'product_id': And(str, lambda s: s != ''),
                         'lot': And(str, lambda s: s != ''),
-                        'expired_date':And(str),
+                        'expire_date': And(str, lambda s: s == ''),
                         'quantity': And(str, lambda s: s != ''),
                         'packing_capasity': And(str, lambda s: s == ''),
                         'packing_quantity': And(str, lambda s: s == ''),
@@ -111,7 +117,11 @@ class Validator():
                     {
                         'product_id': And(str, lambda s: s != ''),
                         'lot': And(str, lambda s: s != ''),
-                        'expired_date':And(str),
+                        'expire_date': And(str,
+                                           lambda s: s != '',
+                                           lambda s: parse(
+                                               s) > datetime.datetime(2021, 1, 1),
+                                           ),
                         'quantity': And(str, lambda s: s != ''),
                         'packing_capasity': And(str, lambda s: s != ''),
                         'packing_quantity': And(str, lambda s: s != ''),

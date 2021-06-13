@@ -1,6 +1,6 @@
 import unittest
 from app import validator
-from app.validator import Validator
+from app.validator import Validator, bad_author_list
 
 
 class Validator_test(unittest.TestCase):
@@ -73,6 +73,39 @@ class Validator_test(unittest.TestCase):
         self.assertFalse(validator.validate_data(
             'weighting', dict_with_empty_fields_and_rows))
 
+        dict_with_bad_author = {'header':
+                                {'doc_id': '23442-ffggg-eeeer-555555',
+                                 'create_date_string': '22-05-2021',
+                                 'author': 'Скрипковский М.Ю.',
+                                 'doc_type': 'Vzveshianie',
+                                 },
+                                'fields': {
+                                    'container': '123456789',
+                                    'batch': '123A3',
+                                },
+                                'rows': [
+                                    {'product_id': '000334',
+                                     'lot': '12345678901234567890',
+                                     'expire_date': '',
+                                     'quantity': '15.6',
+                                     'packing_capasity': '',
+                                     'packing_quantity': '',
+                                     'packing_name': '',
+                                     'packing_code': '',
+                                     },
+                                    {'product_id': '000335',
+                                     'lot': '12345678901234567890',
+                                     'expire_date': '',
+                                     'quantity': '0.6',
+                                     'packing_capasity': '',
+                                     'packing_quantity': '',
+                                     'packing_name': '',
+                                     'packing_code': '', }
+
+                                ],
+                                }
+        self.assertFalse(validator.validate_data(
+            'weighting', dict_with_bad_author))
         good_dict = {'header':
                      {'doc_id': '23442-ffggg-eeeer-555555',
                       'create_date_string': '22-05-2021',
@@ -86,6 +119,7 @@ class Validator_test(unittest.TestCase):
                      'rows': [
                          {'product_id': '000334',
                           'lot': '12345678901234567890',
+                          'expire_date': '',
                           'quantity': '15.6',
                           'packing_capasity': '',
                           'packing_quantity': '',
@@ -94,6 +128,7 @@ class Validator_test(unittest.TestCase):
                           },
                          {'product_id': '000335',
                           'lot': '12345678901234567890',
+                          'expire_date': '',
                           'quantity': '0.6',
                           'packing_capasity': '',
                           'packing_quantity': '',
@@ -119,6 +154,7 @@ class Validator_test(unittest.TestCase):
                                   'rows': [
                                       {'product_id': '000334',
                                        'lot': '12345678901234567890',
+                                       'expire_date': '',
                                        'quantity': '15.6',
                                        'packing_capasity': '',
                                        'packing_quantity': '',
@@ -127,6 +163,7 @@ class Validator_test(unittest.TestCase):
                                        },
                                       {'product_id': '000335',
                                        'lot': '12345678901234567890',
+                                       'expire_date': '',
                                        'quantity': '0.6',
                                        'packing_capasity': '',
                                        'packing_quantity': '',
@@ -178,6 +215,7 @@ class Validator_test(unittest.TestCase):
                      'rows': [
                          {'product_id': '000334',
                           'lot': '12345678901234567890',
+                          'expire_date': '',
                           'quantity': '15.6',
                           'packing_capasity': '',
                           'packing_quantity': '',
@@ -186,6 +224,7 @@ class Validator_test(unittest.TestCase):
                           },
                          {'product_id': '000335',
                           'lot': '12345678901234567890',
+                          'expire_date': '',
                           'quantity': '0.6',
                           'packing_capasity': '',
                           'packing_quantity': '',
@@ -210,6 +249,7 @@ class Validator_test(unittest.TestCase):
                                   'rows': [
                                       {'product_id': '000334',
                                        'lot': '12345678901234567890',
+                                       'expire_date': '2021-05-01T00:00:00.0000000',
                                        'quantity': '1',
                                        'packing_capasity': '100',
                                        'packing_quantity': '5',
@@ -218,6 +258,7 @@ class Validator_test(unittest.TestCase):
                                        },
                                       {'product_id': '000335',
                                        'lot': '12345678901234567890',
+                                       'expire_date': '2021-05-01T00:00:00.0000000',
                                        'quantity': '1',
                                        'packing_capasity': '100',
                                        'packing_quantity': '6',
@@ -256,6 +297,39 @@ class Validator_test(unittest.TestCase):
         self.assertFalse(validator.validate_data(
             'acceptance', dict_with_empty_fields_and_rows))
 
+        dict_with_bad_date = {'header':
+                              {'doc_id': '23442-ffggg-eeeer-555555',
+                               'create_date_string': '22-05-2021',
+                               'author': 'Иванов А.А.',
+                               'doc_type': 'Vzveshianie',
+                               },
+                              'fields': {
+                                  'container': '',
+                                  'batch': '',
+                              },
+                              'rows': [
+                                  {'product_id': '000334',
+                                   'lot': '12345678901234567890',
+                                   'expire_date': '2020-05-01T00:00:00.0000000',
+                                   'quantity': '1',
+                                   'packing_capasity': '15',
+                                   'packing_quantity': '10',
+                                   'packing_name': 'Бочка 200 л',
+                                   'packing_code': '3',
+                                   },
+                                  {'product_id': '000335',
+                                   'lot': '12345678901234567890',
+                                   'expire_date': '2020-05-01T00:00:00.0000000',
+                                   'quantity': '1',
+                                   'packing_capasity': '5',
+                                   'packing_quantity': '12',
+                                   'packing_name': 'Куб 1000 л',
+                                   'packing_code': '6', }
+                              ],
+                              }
+        self.assertFalse(validator.validate_data(
+            'acceptance', dict_with_bad_date))
+
         good_dict = {'header':
                      {'doc_id': '23442-ffggg-eeeer-555555',
                       'create_date_string': '22-05-2021',
@@ -269,6 +343,7 @@ class Validator_test(unittest.TestCase):
                      'rows': [
                          {'product_id': '000334',
                           'lot': '12345678901234567890',
+                          'expire_date': '2021-05-01T00:00:00.0000000',
                           'quantity': '1',
                           'packing_capasity': '15',
                           'packing_quantity': '10',
@@ -277,6 +352,7 @@ class Validator_test(unittest.TestCase):
                           },
                          {'product_id': '000335',
                           'lot': '12345678901234567890',
+                          'expire_date': '2021-05-01T00:00:00.0000000',
                           'quantity': '1',
                           'packing_capasity': '5',
                           'packing_quantity': '12',
