@@ -106,6 +106,42 @@ class Validator_test(unittest.TestCase):
                                 }
         self.assertFalse(validator.validate_data(
             'weighting', dict_with_bad_author))
+        
+        dict_with_int_author = {'header':
+                     {'doc_id': '23442-ffggg-eeeer-555555',
+                      'create_date_string': '22-05-2021',
+                      'author': '1',
+                      'doc_type': 'Vzveshianie',
+                      },
+                     'fields': {
+                         'container': '123456789',
+                         'batch': '123A3',
+                     },
+                     'rows': [
+                         {'product_id': '000334',
+                          'lot': '12345678901234567890',
+                          'expire_date': '',
+                          'quantity': '15.6',
+                          'packing_capasity': '',
+                          'packing_quantity': '',
+                          'packing_name': '',
+                          'packing_code': '',
+                          },
+                         {'product_id': '000335',
+                          'lot': '12345678901234567890',
+                          'expire_date': '',
+                          'quantity': '0.6',
+                          'packing_capasity': '',
+                          'packing_quantity': '',
+                          'packing_name': '',
+                          'packing_code': '', }
+
+                     ],
+                     }
+        self.assertFalse(validator.validate_data('weighting', dict_with_int_author))
+
+
+
         good_dict = {'header':
                      {'doc_id': '23442-ffggg-eeeer-555555',
                       'create_date_string': '22-05-2021',

@@ -1,8 +1,10 @@
-from schema import Schema, And, Use, Optional, SchemaError
+from schema import Regex, Schema, And, Use, Optional, SchemaError
 import datetime
 from dateutil.parser import parse
 
-bad_author_list = ['Скрипковский М.Ю.']
+bad_author_list = ['Скрипковский М.Ю.',
+                   'Флотский С.В.',
+                   'Пардаев М.А. ']
 
 
 class Validator():
@@ -21,7 +23,9 @@ class Validator():
                 {
                     'doc_id': And(str, lambda s: s != ''),
                     'create_date_string': And(str, lambda s: s != ''),
-                    'author': And(str, lambda s: s != '', lambda s: s not in bad_author_list),
+                    'author': And(str,
+                                  lambda s: s != '', lambda s: s not in bad_author_list,
+                                  Regex(r'^[А-Я]{1}[а-я]{1,}[ ][А-Я]{1}[.][А-Я]{1}[.]$')),
                     'doc_type': And(str, lambda s: s != ''),
                 },
                 'fields':
@@ -63,7 +67,9 @@ class Validator():
                 {
                     'doc_id': And(str, lambda s: s != ''),
                     'create_date_string': And(str, lambda s: s != ''),
-                    'author': And(str, lambda s: s != ''),
+                    'author': And(str,
+                                  lambda s: s != '', lambda s: s not in bad_author_list,
+                                  Regex(r'^[А-Я]{1}[а-я]{1,}[ ][А-Я]{1}[.][А-Я]{1}[.]$')),
                     'doc_type': And(str, lambda s: s != ''),
                 },
                 'fields':
@@ -104,7 +110,9 @@ class Validator():
                 {
                     'doc_id': And(str, lambda s: s != ''),
                     'create_date_string': And(str, lambda s: s != ''),
-                    'author': And(str, lambda s: s != ''),
+                    'author': And(str,
+                                  lambda s: s != '', lambda s: s not in bad_author_list,
+                                  Regex(r'^[А-Я]{1}[а-я]{1,}[ ][А-Я]{1}[.][А-Я]{1}[.]$')),
                     'doc_type': And(str, lambda s: s != ''),
                 },
                 'fields':

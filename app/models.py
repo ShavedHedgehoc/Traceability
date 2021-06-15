@@ -16,12 +16,6 @@ class XmlData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     xml_data = db.Column(XML)
     processed = db.Column(db.Boolean(), server_default=expression.false())
-    # error = db.Column(db.Boolean(), server_default=expression.false())
-    # empty_doc = db.Column(db.Boolean(), server_default=expression.false())
-    # unsupported_doc = db.Column(
-    #     db.Boolean(), server_default=expression.false())
-    # catched = db.Column(db.Boolean(), server_default=expression.false())
-    # task_id = db.Column(db.String(64), index=True)
 
 
 class XmlDataP(db.Model):
@@ -93,11 +87,11 @@ class Barrel(db.Model):
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
 
     @classmethod
-    def get_id(cls, name):
+    def get_id(cls, id, name):
         barrel = db.session.query(cls).filter(
-            cls.name == name).one_or_none()
+            cls.id == id).one_or_none()
         if barrel is None:
-            barrel = cls(name=name)
+            barrel = cls(id=id, name=name)
             db.session.add(barrel)
             db.session.commit()
         return barrel.id

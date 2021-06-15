@@ -18,12 +18,15 @@ def GetCount(wd):
 if __name__ == '__main__':
 
     doctypes = [
-        # 'VzveshivanieBezPechatiTest',
-        # 'VzveshivaniePechatTest',
-        # 'ZagruzkaEmkosteiVApparat',
-        # 'Vzveshivanie',
-        # 'VzveshivanieKolpino',
-        'Priemka'
+        'VzveshivanieBezPechatiTest',
+        'VzveshivaniePechatTest',
+        'ZagruzkaEmkosteiVApparat',
+        'Vzveshivanie',
+        'VzveshivanieKolpino',
+        'Priemka',
+        'PriemkaT2',
+
+        
     ]
 
     # server = 'srv-webts'
@@ -46,7 +49,7 @@ if __name__ == '__main__':
     # port = '1402'
     database = 'cleverdata'
     user = 'sa'
-    password = '<Strongpass123>'
+    password = '<Strongpass123456>'
     # database = 'Load_data_test'
     conn = p.connect(
         'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' +

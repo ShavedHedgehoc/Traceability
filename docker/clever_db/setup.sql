@@ -60,9 +60,10 @@ AS
     SET NOCOUNT ON;                
 
     INSERT INTO XMLData (
-        xml_data              
+        xml_data,
+        processed              
     )
-    VALUES (@documentXml)
+    VALUES (@documentXml, 'False')
     SET @result=1
 GO
 

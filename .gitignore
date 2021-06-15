@@ -7,4 +7,4 @@ venv
 *.pyc
 *.zip
 System Volume Information
-
+*.rar

@@ -1,0 +1,37 @@
+sudo apt update
+sudo apt -y upgrade
+sudo apt install -y python3-pip
+sudo apt install -y build-essential libssl-dev libffi-dev python3-dev
+sudo apt install -y python3-venv
+python3 -m venv venv
+
+sudo apt-get install liqpq-dev для psycopg2
+sudo apt-get install unixodbc-dev для psycopg2
+
+pip install -r requirements.txt
+
+
+
+
+docker run -p 6379:6379 =d redis
+
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=<Strongpass123456>" -p 1433:1433 --name clever -d mcr.microsoft.com/mssql/server:2017-latest
+
+docker run -p 5432:5432 --name pgr -e POSTGRES_PASSWORD=changeme -d postgres
+
+
+sudo su
+curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+
+
+curl https://packages.microsoft.com/config/ubuntu/20.10/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+exit
+sudo apt-get update
+sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17
+
+flask db init --multidb
+
+flask db migrate
+
+flask db upgrade

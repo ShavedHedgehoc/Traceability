@@ -28,56 +28,6 @@ from .models import (Acceptance, User,
                      )
 
 
-@ celery.task(base=Singleton, name='doc_reload')
-def doc_reload():
-
-    docs_limit = os.environ.get('DOCS_LIMIT')
-    processed_list = []
-
-    sub_qry = db.session.query(XmlData.id, XmlData.xml_data).filter(
-        XmlData.processed == false()).limit(docs_limit)
-
-    if sub_qry.count() < 1:
-        print('No rows')
-        return('No rows')
-    else:
-        Flag = False
-        for row in sub_qry:
-            if not Flag:
-                start_id = row.id
-                Flag = True
-            NewXMLData = XmlDataP(
-                xml_data=row.xml_data,
-                processed=False,
-                empty_doc=False,
-                unsupported_doc=False)
-            db.session.add(NewXMLData)
-            db.session.commit()
-            processed_list.append(row.id)
-        data = {'processed': True}
-        upd_qry = db.session.query(XmlData).filter(
-            XmlData.id.in_(processed_list)).update(data, False)
-        db.session.commit()
-    print(f'End task {start_id}')
-
-
-def get_id_by_name(model_name, name_value):
-    try:
-        local_model = getattr(models, model_name)
-        record = db.session.query(local_model).filter(
-            local_model.name == name_value).one_or_none()
-    except TypeError:
-        return -1
-    if record is None:
-        new_record = local_model(name=name_value)
-        db.session.add(new_record)
-        db.session.commit()
-        get_id = new_record.id
-    else:
-        get_id = record.id
-    return get_id
-
-
 def get_doctype_id_alias(doctype_name):
     doctype = db.session.query(Doctype).filter(
         Doctype.name == doctype_name).one_or_none()
@@ -92,19 +42,6 @@ def doc_exists(doc_id):
     if existing_doc is None:
         return False
     return True
-
-
-def get_author_id(author_name):
-    author = db.session.query(Author).filter(
-        Author.name == author_name).one_or_none()
-    if author is None:
-        new_author = Author(name=author_name)
-        db.session.add(new_author)
-        db.session.commit()
-        author_id = new_author.id
-    else:
-        author_id = author.id
-    return author_id
 
 
 def write_doc(data):
@@ -158,7 +95,7 @@ def write_doc(data):
             product_id = Product.get_id(row['product_id'])
             lot_id = Lot.get_id(row['lot'], product_id)
             expire_date = parse(row['expire_date'])
-            barrel_id = Barrel.get_id(row['packing_name'])
+            barrel_id = Barrel.get_id(row['packing_code'], row['packing_name'])
             barrel_capacity = row['packing_capasity']
             barrel_quantity = row['packing_quantity']
             a_obj = Acceptance(document_id=document_id,
@@ -173,6 +110,64 @@ def write_doc(data):
         db.session.commit()
 
     return 'Write!'
+
+
+@ celery.task(base=Singleton, name='doc_reload')
+def doc_reload():
+
+    docs_limit = os.environ.get('DOCS_LIMIT')
+    processed_list = []
+
+    sub_qry = db.session.query(XmlData.id, XmlData.xml_data).filter(
+        XmlData.processed == false()).limit(docs_limit)
+
+    if sub_qry.count() < 1:
+        print('No rows')
+        return('No rows')
+    else:
+        Flag = False
+        for row in sub_qry:
+            if not Flag:
+                start_id = row.id
+                Flag = True
+            NewXMLData = XmlDataP(
+                xml_data=row.xml_data,
+                processed=False,
+                empty_doc=False,
+                unsupported_doc=False)
+            db.session.add(NewXMLData)
+            db.session.commit()
+            processed_list.append(row.id)
+        data = {'processed': True}
+        upd_qry = db.session.query(XmlData).filter(
+            XmlData.id.in_(processed_list)).update(data, False)
+        db.session.commit()
+    print(f'End task {start_id}')
+
+
+@ celery.task(base=Singleton, name='doctype_update')
+def doctype_update():
+    """ Update table 'doctypes' with supported documents types
+    """
+
+    doctypes = [
+        ['VzveshivanieBezPechatiTest', 'weighting'],
+        ['VzveshivaniePechatTest', 'weighting'],
+        ['Vzveshivanie', 'weighting'],
+        ['VzveshivanieKolpino', 'weighting'],
+        ['ZagruzkaEmkosteiVApparat', 'load'],
+        ['Priemka', 'acceptance'],
+        ['PriemkaT2', 'acceptance'],
+    ]
+    for reserved_docktype in doctypes:
+        existing_docktype = Doctype.query.filter(
+            Doctype.name == reserved_docktype[0]).one_or_none()
+        if existing_docktype is None:
+            new_docktype = Doctype(name=reserved_docktype[0],
+                                   alias=reserved_docktype[1]
+                                   )
+            db.session.add(new_docktype)
+            db.session.commit()
 
 
 @ celery.task(base=Singleton, name='doc_write')
@@ -231,42 +226,3 @@ def doc_write():
             'unsupported': len(unsupported_list),
             'empty': len(empty_list),
             })
-
-    # parsed_data = xp.xml_parse(sub_qry.xml_data)
-
-    # doctype_id, doctype_alias = get_doctype_id_alias(
-    #     parsed_data['header']['doc_type']
-    # )
-
-    # if doctype_id == -1:
-    #     print('Unsupported')
-    #     status = 'unsupported_doc'
-    # else:
-    #     parsed_data = xp.xml_parse(sub_qry.xml_data)
-    #     print(parsed_data)
-    #     print('----------------------------------')
-    #     status = 'processed'
-
-    # if doctype_alias == 'Взвешивание':
-    #     parsed_data = xml_parse_weighting(sub_qry.xml_data)
-    #     if parsed_data['rows'] == []:
-    #         print('Empty')
-    #         status = 'empty_doc'
-    #     else:
-    #         print('Processed')
-    #         status = 'processed'
-    # if doctype_alias == 'Загрузка':
-    #     parsed_data = xml_parse_load(sub_qry.xml_data)
-    #     if parsed_data['rows'] == []:
-    #         print('Empty')
-    #         status = 'empty_doc'
-    #     else:
-    #         print('Processed')
-    #         status = 'processed'
-
-    # data = {status: True}
-    # upd_qry = db.session.query(XmlDataP).filter(
-    #     XmlDataP.id == catched_id).update(data, False)
-    # db.session.commit()
-    # print(status)
-    # return (status)

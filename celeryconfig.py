@@ -7,10 +7,10 @@ result_serializer = 'json'
 task_serializer = 'json'
 
 beat_schedule = {
-    # 'doc_reload':{
-    #     'task': 'doc_reload',
-    #     'schedule':  5,
-    # },
+    'doc_reload':{
+        'task': 'doc_reload',
+        'schedule':  15,
+    },
     'doc_write': {
         'task': 'doc_write',
         'schedule': 5,
