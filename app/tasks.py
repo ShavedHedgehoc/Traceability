@@ -125,17 +125,18 @@ def doc_reload():
         print('No rows')
         return('No rows')
     else:
-        Flag = False
+        flag = False
         for row in sub_qry:
-            if not Flag:
+            if not flag:
                 start_id = row.id
-                Flag = True
-            NewXMLData = XmlDataP(
+                flag = True
+            new_xml_obj = XmlDataP(
                 xml_data=row.xml_data,
                 processed=False,
                 empty_doc=False,
-                unsupported_doc=False)
-            db.session.add(NewXMLData)
+                unsupported_doc=False,
+                skipped_doc=False)
+            db.session.add(new_xml_obj)
             db.session.commit()
             processed_list.append(row.id)
         data = {'processed': True}
@@ -178,7 +179,8 @@ def doc_write():
         sub_qry = db.session.query(XmlDataP.id, XmlDataP.xml_data).filter(
             XmlDataP.empty_doc == false()).filter(
             XmlDataP.processed == false()).filter(
-            XmlDataP.unsupported_doc == false()).limit(docs_limit).with_for_update().all()
+            XmlDataP.unsupported_doc == false()).filter(
+            XmlDataP.skipped_doc == false()).limit(docs_limit).with_for_update().all()
     except:
         return ('Lock finded')
 
@@ -218,6 +220,9 @@ def doc_write():
     data = {'unsupported_doc': True}
     upd_qry = db.session.query(XmlDataP).filter(
         XmlDataP.id.in_(unsupported_list)).update(data, False)
+    data = {'skipped_doc': True}
+    upd_qry = db.session.query(XmlDataP).filter(
+        XmlDataP.id.in_(skip_list)).update(data, False)
     db.session.commit()
     print(
         f'End task processed:{len(processed_list)}, unsupported: {len(unsupported_list)}')

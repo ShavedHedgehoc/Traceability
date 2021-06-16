@@ -25,6 +25,7 @@ class XmlDataP(db.Model):
     processed = db.Column(db.Boolean(), default=False)
     empty_doc = db.Column(db.Boolean(), default=False)
     unsupported_doc = db.Column(db.Boolean(), default=False)
+    skipped_doc = db.Column(db.Boolean(), default=False)
 
 
 class User(UserMixin, db.Model):

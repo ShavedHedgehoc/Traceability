@@ -38,7 +38,7 @@ class Validator():
                     {
                         'product_id': And(str, lambda s: s != ''),
                         'lot': And(str, lambda s: s != ''),
-                        'expire_date': And(str, lambda s: s == ''),
+                        'expire_date': And(str),# remove lambda
                         'quantity': And(str, lambda s: s != ''),
                         'packing_capasity': And(str, lambda s: s == ''),
                         'packing_quantity': And(str, lambda s: s == ''),
